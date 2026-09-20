@@ -28,13 +28,14 @@ button { cursor: pointer; }
 .site-header { position: sticky; z-index: 5; top: 0; border-bottom: 1px solid rgba(170,184,214,.12); background: rgba(11,16,32,.91); backdrop-filter: blur(12px); }
 .nav-wrap { min-height: 4.6rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .brand { display: inline-flex; align-items: center; gap: .65rem; color: var(--text); font-size: 1rem; font-weight: 850; letter-spacing: -.02em; text-decoration: none; }
-.brand-dot { width: .8rem; height: .8rem; border-radius: 50%; background: linear-gradient(135deg, var(--cyan), var(--violet)); box-shadow: 0 0 18px var(--cyan); }
+.brand-dot { width: .8rem; height: .8rem; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 18px var(--cyan); }
 .menu-button { display: grid; place-items: center; width: 2.7rem; height: 2.7rem; color: var(--text); border: 1px solid var(--line); border-radius: .5rem; background: transparent; font-size: 1.3rem; }
 .site-nav { display: none; position: absolute; top: 4.5rem; right: 1rem; left: 1rem; padding: .6rem; border: 1px solid var(--line); border-radius: .7rem; background: var(--panel); box-shadow: 0 16px 32px rgba(0,0,0,.25); }
 .site-nav.is-open { display: grid; }
 .site-nav a { padding: .55rem .7rem; color: var(--muted); border-radius: .4rem; font-weight: 700; text-decoration: none; }
 .site-nav a:hover, .site-nav a:focus-visible { color: var(--text); background: var(--panel-soft); }
 
+/* Background gradients retained for section layout depth */
 .hero { position: relative; overflow: hidden; padding: 5.8rem 0 5rem; background: radial-gradient(circle at 90% 20%, rgba(94,156,255,.28), transparent 27rem), radial-gradient(circle at 8% 85%, rgba(167,139,250,.24), transparent 30rem), var(--bg); }
 .hero::after { content: ""; position: absolute; top: -12rem; right: -8rem; width: 30rem; height: 30rem; border: 1px solid rgba(84,215,226,.25); border-radius: 50%; box-shadow: 0 0 0 2.8rem rgba(84,215,226,.04), 0 0 0 5.6rem rgba(84,215,226,.03); }
 .hero-layout { position: relative; display: grid; gap: 2.5rem; align-items: center; }
@@ -71,6 +72,7 @@ dd { margin: .15rem 0 0; color: var(--amber); font-weight: 850; }
 pre { overflow-x: auto; padding: 1.25rem; margin: 0; color: #d6e7ff; border: 1px solid #28385d; border-radius: .8rem; background: #080d1a; font: .84rem/1.65 "Cascadia Code", "Fira Code", Consolas, monospace; }
 pre code { white-space: pre; }
 
+/* Background gradient retained for section layout depth */
 .compare-section { background: linear-gradient(135deg, #131b34, #111a2d); }
 .table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: .75rem; }
 table { width: 100%; min-width: 720px; border-collapse: collapse; background: var(--panel); }
