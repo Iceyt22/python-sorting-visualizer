@@ -3,19 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Learn Bubble Sort, Selection Sort, and Insertion Sort in Python with interactive visualizations.">
   <title>Python Sorting Studio</title>
   <link rel="stylesheet" href="css/styles.css">
   <script src="js/app.js" defer></script>
 </head>
 <body>
-  <a class="skip-link" href="#main-content">Skip to main content</a>
-
   <header class="site-header">
     <div class="container nav-wrap">
-      <a class="brand" href="#top"><span class="brand-dot" aria-hidden="true"></span>Python Sorting Studio</a>
-      <button class="menu-button" type="button" aria-expanded="false" aria-controls="site-nav"><span class="sr-only">Toggle navigation</span><span aria-hidden="true">☰</span></button>
-      <nav id="site-nav" class="site-nav" aria-label="Primary navigation">
+      <a class="brand" href="#top"><span class="brand-dot"></span>Sorting Studio</a>
+      <nav class="site-nav">
         <a href="#bubble">Bubble</a>
         <a href="#selection">Selection</a>
         <a href="#insertion">Insertion</a>
@@ -29,55 +25,26 @@
     <section id="top" class="hero">
       <div class="container hero-layout">
         <div>
-          <p class="eyebrow">ALGORITHMS · PYTHON · INTERACTIVE LEARNING</p>
-          <h1>See how simple sorting algorithms think.</h1>
-          <p class="hero-copy">Learn Bubble Sort, Selection Sort, and Insertion Sort through clear Python code and an interactive, step-by-step visualizer.</p>
-          <a class="button button-primary" href="#playground">Open the playground</a>
+          <h1>How sorting algorithms work</h1>
+          <p class="hero-copy">Explore Bubble, Selection, and Insertion sort through clear Python implementations and interactive visual steps.</p>
+          <a class="button button-primary" href="#playground">Try the playground</a>
         </div>
-        <div class="hero-panel" aria-label="Sorting algorithm highlights">
-          <div><strong>3</strong><span>algorithms</span></div>
-          <div><strong>O(n²)</strong><span>average time</span></div>
-          <div><strong>1</strong><span>interactive engine</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section intro-section">
-      <div class="container intro-layout">
-        <div>
-          <p class="eyebrow">THE BIG IDEA</p>
-          <h2>Sorting puts values in order.</h2>
-        </div>
-        <p>Comparison sorts repeatedly inspect values and reorganize them until every item is in ascending order. These three algorithms are excellent for learning algorithmic thinking, even though faster options are usually preferred for large collections.</p>
       </div>
     </section>
 
     <section id="bubble" class="section algorithm-section">
       <div class="container algorithm-layout">
         <div class="algorithm-copy">
-          <p class="eyebrow">ALGORITHM 01</p>
           <h2>Bubble Sort</h2>
-          <p>Bubble Sort compares neighboring values. When the left value is larger, it swaps the pair. Large values gradually “bubble” toward the end.</p>
-          <ol>
-            <li>Compare adjacent values.</li>
-            <li>Swap them if they are in the wrong order.</li>
-            <li>Repeat passes until no swaps are needed.</li>
-          </ol>
-          <dl class="properties">
-            <div><dt>Best</dt><dd>O(n)</dd></div><div><dt>Average</dt><dd>O(n²)</dd></div><div><dt>Worst</dt><dd>O(n²)</dd></div><div><dt>Space</dt><dd>O(1)</dd></div>
-            <div><dt>Stable</dt><dd>Yes</dd></div><div><dt>In place</dt><dd>Yes</dd></div>
-          </dl>
-          <button class="text-button" type="button" data-load-algorithm="bubble">Try Bubble Sort in the playground →</button>
+          <p>Compares neighboring elements and swaps them if they are out of order, letting larger values gradually float to the end.</p>
+          <button class="text-button" type="button" data-load-algorithm="bubble">Load into playground →</button>
         </div>
-        <pre aria-label="Bubble Sort Python code"><code>def bubble_sort(values):
-    for end in range(len(values) - 1, 0, -1):
-        swapped = False
-        for index in range(end):
-            if values[index] &gt; values[index + 1]:
-                values[index], values[index + 1] = values[index + 1], values[index]
-                swapped = True
-        if not swapped:
-            break
+        <pre><code>def bubble_sort(values):
+    n = len(values)
+    for i in range(n):
+        for j in range(0, n - i - 1):
+            if values[j] > values[j + 1]:
+                values[j], values[j + 1] = values[j + 1], values[j]
     return values</code></pre>
       </div>
     </section>
@@ -85,27 +52,17 @@
     <section id="selection" class="section algorithm-section section-alt">
       <div class="container algorithm-layout">
         <div class="algorithm-copy">
-          <p class="eyebrow">ALGORITHM 02</p>
           <h2>Selection Sort</h2>
-          <p>Selection Sort scans the unsorted portion to find its smallest value, then places that value at the next sorted position.</p>
-          <ol>
-            <li>Start at the first unsorted position.</li>
-            <li>Find the smallest remaining value.</li>
-            <li>Swap it into the current position.</li>
-          </ol>
-          <dl class="properties">
-            <div><dt>Best</dt><dd>O(n²)</dd></div><div><dt>Average</dt><dd>O(n²)</dd></div><div><dt>Worst</dt><dd>O(n²)</dd></div><div><dt>Space</dt><dd>O(1)</dd></div>
-            <div><dt>Stable</dt><dd>No</dd></div><div><dt>In place</dt><dd>Yes</dd></div>
-          </dl>
-          <button class="text-button" type="button" data-load-algorithm="selection">Try Selection Sort in the playground →</button>
+          <p>Scans the remaining unsorted list to find the smallest element, then places it at the end of the sorted section.</p>
+          <button class="text-button" type="button" data-load-algorithm="selection">Load into playground →</button>
         </div>
-        <pre aria-label="Selection Sort Python code"><code>def selection_sort(values):
-    for start in range(len(values) - 1):
-        minimum = start
-        for index in range(start + 1, len(values)):
-            if values[index] &lt; values[minimum]:
-                minimum = index
-        values[start], values[minimum] = values[minimum], values[start]
+        <pre><code>def selection_sort(values):
+    for i in range(len(values)):
+        min_idx = i
+        for j in range(i + 1, len(values)):
+            if values[j] < values[min_idx]:
+                min_idx = j
+        values[i], values[min_idx] = values[min_idx], values[i]
     return values</code></pre>
       </div>
     </section>
@@ -113,44 +70,54 @@
     <section id="insertion" class="section algorithm-section">
       <div class="container algorithm-layout">
         <div class="algorithm-copy">
-          <p class="eyebrow">ALGORITHM 03</p>
           <h2>Insertion Sort</h2>
-          <p>Insertion Sort grows a sorted section on the left. Each new value shifts larger values right until it can be inserted in the correct position.</p>
-          <ol>
-            <li>Choose the next value as the key.</li>
-            <li>Shift larger values in the sorted section right.</li>
-            <li>Insert the key in the gap.</li>
-          </ol>
-          <dl class="properties">
-            <div><dt>Best</dt><dd>O(n)</dd></div><div><dt>Average</dt><dd>O(n²)</dd></div><div><dt>Worst</dt><dd>O(n²)</dd></div><div><dt>Space</dt><dd>O(1)</dd></div>
-            <div><dt>Stable</dt><dd>Yes</dd></div><div><dt>In place</dt><dd>Yes</dd></div>
-          </dl>
-          <button class="text-button" type="button" data-load-algorithm="insertion">Try Insertion Sort in the playground →</button>
+          <p>Builds the final sorted array one item at a time by shifting larger elements out of the way to insert each item into place.</p>
+          <button class="text-button" type="button" data-load-algorithm="insertion">Load into playground →</button>
         </div>
-        <pre aria-label="Insertion Sort Python code"><code>def insertion_sort(values):
-    for index in range(1, len(values)):
-        key = values[index]
-        position = index - 1
-        while position &gt;= 0 and values[position] &gt; key:
-            values[position + 1] = values[position]
-            position -= 1
-        values[position + 1] = key
+        <pre><code>def insertion_sort(values):
+    for i in range(1, len(values)):
+        key = values[i]
+        j = i - 1
+        while j >= 0 and values[j] > key:
+            values[j + 1] = values[j]
+            j -= 1
+        values[j + 1] = key
     return values</code></pre>
       </div>
     </section>
 
     <section id="compare" class="section compare-section">
       <div class="container">
-        <p class="eyebrow">AT A GLANCE</p>
-        <h2>Compare the algorithms</h2>
-        <div class="table-scroll" tabindex="0">
+        <h2>Comparison</h2>
+        <div class="table-scroll">
           <table>
-            <caption class="sr-only">Sorting algorithm comparison</caption>
-            <thead><tr><th>Algorithm</th><th>Best</th><th>Average</th><th>Worst</th><th>Extra space</th><th>Stable</th><th>Best learning use</th></tr></thead>
+            <thead>
+              <tr>
+                <th>Algorithm</th>
+                <th>Time (Best)</th>
+                <th>Time (Worst)</th>
+                <th>Space</th>
+              </tr>
+            </thead>
             <tbody>
-              <tr><th>Bubble Sort</th><td>O(n)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>Yes</td><td>Understanding swaps</td></tr>
-              <tr><th>Selection Sort</th><td>O(n²)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>No</td><td>Understanding minimum selection</td></tr>
-              <tr><th>Insertion Sort</th><td>O(n)</td><td>O(n²)</td><td>O(n²)</td><td>O(1)</td><td>Yes</td><td>Understanding shifting and partial order</td></tr>
+              <tr>
+                <th>Bubble Sort</th>
+                <td>O(n)</td>
+                <td>O(n²)</td>
+                <td>O(1)</td>
+              </tr>
+              <tr>
+                <th>Selection Sort</th>
+                <td>O(n²)</td>
+                <td>O(n²)</td>
+                <td>O(1)</td>
+              </tr>
+              <tr>
+                <th>Insertion Sort</th>
+                <td>O(n)</td>
+                <td>O(n²)</td>
+                <td>O(1)</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -160,26 +127,49 @@
     <section id="playground" class="section playground-section">
       <div class="container">
         <div class="playground-heading">
-          <div><p class="eyebrow">INTERACTIVE PLAYGROUND</p><h2>Watch every decision.</h2><p>Choose an algorithm, then step through or play its sorting process.</p></div>
-          <div class="code-preview"><span>Python method</span><code id="active-method">bubble_sort</code></div>
+          <h2>Visual Playground</h2>
+          <p>Select an algorithm and watch the execution step-by-step.</p>
         </div>
         <div class="playground-card">
-          <div class="controls" aria-label="Sorting visualizer controls">
-            <label>Algorithm<select id="algorithm-select"><option value="bubble">Bubble Sort</option><option value="selection">Selection Sort</option><option value="insertion">Insertion Sort</option></select></label>
-            <label>Speed<input id="speed-input" type="range" min="1" max="5" value="3"><span id="speed-label">Medium</span></label>
-            <button id="new-array" class="button button-light" type="button">New array</button>
+          <div class="controls">
+            <label>Algorithm
+              <select id="algorithm-select">
+                <option value="bubble">Bubble Sort</option>
+                <option value="selection">Selection Sort</option>
+                <option value="insertion">Insertion Sort</option>
+              </select>
+            </label>
+            <label>Speed
+              <input id="speed-input" type="range" min="1" max="5" value="3">
+            </label>
+            <button id="new-array" class="button button-light" type="button">New Array</button>
             <button id="play-pause" class="button button-primary" type="button">Start</button>
             <button id="step-button" class="button button-light" type="button">Step</button>
             <button id="reset-button" class="button button-light" type="button">Reset</button>
           </div>
-          <div class="visualizer-meta"><p id="operation-status" role="status" aria-live="polite">Ready. Choose Start or Step to begin.</p><p id="step-count">Step 0 of 0</p></div>
-          <div id="bar-chart" class="bar-chart" role="img" aria-label="Sorting visualizer ready"></div>
-          <div class="legend" aria-label="Visualization legend"><span><i class="legend-default"></i>Value</span><span><i class="legend-active"></i>Comparing</span><span><i class="legend-candidate"></i>Key or minimum</span><span><i class="legend-changed"></i>Moved</span><span><i class="legend-sorted"></i>Sorted</span></div>
+
+          <div class="visualizer-meta">
+            <p id="operation-status" role="status">Ready to start.</p>
+            <p id="step-count">Step 0</p>
+          </div>
+
+          <div id="bar-chart" class="bar-chart"></div>
+
+          <div class="legend">
+            <span><i class="legend-default"></i> Unsorted</span>
+            <span><i class="legend-active"></i> Comparing</span>
+            <span><i class="legend-candidate"></i> Target</span>
+            <span><i class="legend-sorted"></i> Sorted</span>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer"><div class="container"><p>Python Sorting Studio · A static learning project built with HTML, CSS, and JavaScript.</p></div></footer>
+  <footer class="site-footer">
+    <div class="container">
+      <p>Python Sorting Studio</p>
+    </div>
+  </footer>
 </body>
 </html>

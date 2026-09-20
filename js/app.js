@@ -1,246 +1,194 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const menuButton = document.querySelector(".menu-button");
-  const navigation = document.querySelector(".site-nav");
-  const algorithmSelect = document.querySelector("#algorithm-select");
-  const speedInput = document.querySelector("#speed-input");
-  const speedLabel = document.querySelector("#speed-label");
-  const newArrayButton = document.querySelector("#new-array");
-  const playPauseButton = document.querySelector("#play-pause");
-  const stepButton = document.querySelector("#step-button");
-  const resetButton = document.querySelector("#reset-button");
-  const chart = document.querySelector("#bar-chart");
-  const operationStatus = document.querySelector("#operation-status");
-  const stepCount = document.querySelector("#step-count");
-  const activeMethod = document.querySelector("#active-method");
+  // Elements
+  const algorithmSelect = document.getElementById("algorithm-select");
+  const speedInput = document.getElementById("speed-input");
+  const newArrayBtn = document.getElementById("new-array");
+  const playPauseBtn = document.getElementById("play-pause");
+  const stepBtn = document.getElementById("step-button");
+  const resetBtn = document.getElementById("reset-button");
+  const statusEl = document.getElementById("operation-status");
+  const stepCountEl = document.getElementById("step-count");
+  const barChart = document.getElementById("bar-chart");
+  const loadButtons = document.querySelectorAll("[data-load-algorithm]");
 
-  const state = {
-    algorithm: "bubble",
-    original: [],
-    steps: [],
-    index: 0,
-    running: false,
-    timer: null
-  };
+  // State
+  let array = [];
+  let originalArray = [];
+  let steps = [];
+  let currentStep = 0;
+  let isPlaying = false;
+  let timer = null;
 
-  const speedNames = ["Slowest", "Slow", "Medium", "Fast", "Fastest"];
-  const speedDelays = [1200, 800, 500, 280, 140];
+  // Speeds in ms (Inverted: range 1-5 -> 600ms to 100ms)
+  const getDelay = () => 700 - speedInput.value * 120;
 
-  const copyValues = (values) => values.slice();
-  const sortedIndexes = (length) => Array.from({ length }, (_, index) => index);
+  // Generate Array
+  function generateArray(size = 12) {
+    array = Array.from({ length: size }, () => Math.floor(Math.random() * 80) + 20);
+    originalArray = [...array];
+    resetState();
+  }
 
-  const makeStep = (values, message, options = {}) => ({
-    values: copyValues(values),
-    message,
-    active: options.active || [],
-    candidate: options.candidate || [],
-    changed: options.changed || [],
-    sorted: options.sorted || []
-  });
+  function resetState() {
+    stop();
+    array = [...originalArray];
+    steps = generateSteps(algorithmSelect.value, [...array]);
+    currentStep = 0;
+    renderBars(array);
+    updateMeta("Ready to start.", 0);
+  }
 
-  const bubbleSteps = (input) => {
-    const values = copyValues(input);
-    const steps = [makeStep(values, "Ready to compare adjacent values.")];
-    const sorted = new Set();
-
-    for (let end = values.length - 1; end > 0; end -= 1) {
-      let swapped = false;
-      for (let index = 0; index < end; index += 1) {
-        steps.push(makeStep(values, `Comparing ${values[index]} and ${values[index + 1]}.`, { active: [index, index + 1], sorted: [...sorted] }));
-        if (values[index] > values[index + 1]) {
-          [values[index], values[index + 1]] = [values[index + 1], values[index]];
-          swapped = true;
-          steps.push(makeStep(values, `Swapped the pair because the left value was larger.`, { changed: [index, index + 1], sorted: [...sorted] }));
+  // Pre-generate steps for visualization
+  function generateSteps(algo, arr) {
+    const history = [];
+    
+    if (algo === "bubble") {
+      let n = arr.length;
+      for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n - i - 1; j++) {
+          history.push({ type: "compare", indices: [j, j + 1], array: [...arr] });
+          if (arr[j] > arr[j + 1]) {
+            [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+            history.push({ type: "swap", indices: [j, j + 1], array: [...arr] });
+          }
         }
+        history.push({ type: "sorted", index: n - 1 - i, array: [...arr] });
       }
-      sorted.add(end);
-      steps.push(makeStep(values, `${values[end]} is fixed at the end of the unsorted region.`, { sorted: [...sorted] }));
-      if (!swapped) {
-        steps.push(makeStep(values, "No swaps were needed in this pass. The array is sorted.", { sorted: sortedIndexes(values.length) }));
-        return steps;
-      }
-    }
-    steps.push(makeStep(values, "All values are sorted.", { sorted: sortedIndexes(values.length) }));
-    return steps;
-  };
-
-  const selectionSteps = (input) => {
-    const values = copyValues(input);
-    const steps = [makeStep(values, "Ready to find the smallest remaining value.")];
-    const sorted = new Set();
-
-    for (let start = 0; start < values.length - 1; start += 1) {
-      let minimum = start;
-      steps.push(makeStep(values, `Starting a scan at position ${start + 1}.`, { candidate: [minimum], sorted: [...sorted] }));
-      for (let index = start + 1; index < values.length; index += 1) {
-        steps.push(makeStep(values, `Comparing ${values[index]} with current minimum ${values[minimum]}.`, { active: [index], candidate: [minimum], sorted: [...sorted] }));
-        if (values[index] < values[minimum]) {
-          minimum = index;
-          steps.push(makeStep(values, `${values[minimum]} is the new candidate minimum.`, { candidate: [minimum], sorted: [...sorted] }));
+    } else if (algo === "selection") {
+      let n = arr.length;
+      for (let i = 0; i < n; i++) {
+        let minIdx = i;
+        history.push({ type: "target", indices: [minIdx], array: [...arr] });
+        for (let j = i + 1; j < n; j++) {
+          history.push({ type: "compare", indices: [j, minIdx], array: [...arr] });
+          if (arr[j] < arr[minIdx]) {
+            minIdx = j;
+            history.push({ type: "target", indices: [minIdx], array: [...arr] });
+          }
         }
+        if (minIdx !== i) {
+          [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]];
+          history.push({ type: "swap", indices: [i, minIdx], array: [...arr] });
+        }
+        history.push({ type: "sorted", index: i, array: [...arr] });
       }
-      if (minimum !== start) {
-        [values[start], values[minimum]] = [values[minimum], values[start]];
-        steps.push(makeStep(values, `Placed the minimum value at position ${start + 1}.`, { changed: [start, minimum], sorted: [...sorted] }));
-      } else {
-        steps.push(makeStep(values, `The current value is already the minimum for this position.`, { candidate: [start], sorted: [...sorted] }));
+    } else if (algo === "insertion") {
+      let n = arr.length;
+      history.push({ type: "sorted", index: 0, array: [...arr] });
+      for (let i = 1; i < n; i++) {
+        let key = arr[i];
+        let j = i - 1;
+        history.push({ type: "target", indices: [i], array: [...arr] });
+        while (j >= 0 && arr[j] > key) {
+          history.push({ type: "compare", indices: [j, j + 1], array: [...arr] });
+          arr[j + 1] = arr[j];
+          j--;
+          history.push({ type: "swap", indices: [j + 1, j + 2], array: [...arr] });
+        }
+        arr[j + 1] = key;
       }
-      sorted.add(start);
-      steps.push(makeStep(values, `Position ${start + 1} is now sorted.`, { sorted: [...sorted] }));
-    }
-    steps.push(makeStep(values, "All values are sorted.", { sorted: sortedIndexes(values.length) }));
-    return steps;
-  };
-
-  const insertionSteps = (input) => {
-    const values = copyValues(input);
-    const steps = [makeStep(values, "The first value starts the sorted section.", { sorted: [0] })];
-
-    for (let index = 1; index < values.length; index += 1) {
-      const key = values[index];
-      let position = index - 1;
-      steps.push(makeStep(values, `Selected ${key} as the key to insert.`, { candidate: [index], sorted: Array.from({ length: index }, (_, item) => item) }));
-      while (position >= 0 && values[position] > key) {
-        values[position + 1] = values[position];
-        steps.push(makeStep(values, `Shifted ${values[position]} right to make room for ${key}.`, { changed: [position, position + 1], candidate: [position + 1], sorted: Array.from({ length: index }, (_, item) => item) }));
-        position -= 1;
+      for (let i = 0; i < n; i++) {
+        history.push({ type: "sorted", index: i, array: [...arr] });
       }
-      values[position + 1] = key;
-      steps.push(makeStep(values, `Inserted ${key} at position ${position + 2}.`, { changed: [position + 1], sorted: Array.from({ length: index + 1 }, (_, item) => item) }));
     }
-    steps.push(makeStep(values, "All values are sorted.", { sorted: sortedIndexes(values.length) }));
-    return steps;
-  };
+    return history;
+  }
 
-  const generators = { bubble: bubbleSteps, selection: selectionSteps, insertion: insertionSteps };
-  const methodNames = { bubble: "bubble_sort", selection: "selection_sort", insertion: "insertion_sort" };
+  // Render Bar Elements
+  function renderBars(arr, highlights = {}) {
+    barChart.innerHTML = "";
+    const maxVal = Math.max(...arr, 100);
 
-  const makeArray = () => Array.from({ length: 10 }, () => Math.floor(Math.random() * 85) + 10);
-
-  const stopPlayback = () => {
-    state.running = false;
-    if (state.timer) {
-      window.clearTimeout(state.timer);
-      state.timer = null;
-    }
-    playPauseButton.textContent = "Start";
-  };
-
-  const render = () => {
-    const step = state.steps[state.index] || makeStep(state.original, "Ready to begin.");
-    const maxValue = Math.max(...step.values, 1);
-    const active = new Set(step.active);
-    const candidate = new Set(step.candidate);
-    const changed = new Set(step.changed);
-    const sorted = new Set(step.sorted);
-
-    chart.replaceChildren();
-    step.values.forEach((value, index) => {
+    arr.forEach((val, i) => {
       const bar = document.createElement("div");
-      let className = "bar";
-      if (sorted.has(index)) className += " bar-sorted";
-      if (candidate.has(index)) className += " bar-candidate";
-      if (changed.has(index)) className += " bar-changed";
-      if (active.has(index)) className += " bar-active";
-      bar.className = className;
-      bar.style.height = `${Math.max(12, (value / maxValue) * 100)}%`;
-      bar.textContent = value;
-      bar.setAttribute("aria-hidden", "true");
-      chart.append(bar);
+      bar.className = "bar";
+      bar.style.height = `${(val / maxVal) * 100}%`;
+      bar.textContent = val;
+
+      if (highlights.active && highlights.active.includes(i)) {
+        bar.classList.add("bar-active");
+      }
+      if (highlights.target && highlights.target.includes(i)) {
+        bar.classList.add("bar-candidate");
+      }
+      if (highlights.changed && highlights.changed.includes(i)) {
+        bar.classList.add("bar-changed");
+      }
+      if (highlights.sorted && highlights.sorted.includes(i)) {
+        bar.classList.add("bar-sorted");
+      }
+
+      barChart.appendChild(bar);
     });
+  }
 
-    operationStatus.textContent = step.message;
-    stepCount.textContent = `Step ${state.index} of ${Math.max(0, state.steps.length - 1)}`;
-    chart.setAttribute("aria-label", `Current array: ${step.values.join(", ")}. ${step.message}`);
-    stepButton.disabled = state.index >= state.steps.length - 1;
-    resetButton.disabled = state.index === 0 && !state.running;
-  };
-
-  const advance = () => {
-    if (state.index >= state.steps.length - 1) {
-      stopPlayback();
-      render();
-      return false;
-    }
-    state.index += 1;
-    render();
-    return true;
-  };
-
-  const play = () => {
-    if (!state.running) return;
-    if (!advance()) return;
-    const delay = speedDelays[Number(speedInput.value) - 1];
-    state.timer = window.setTimeout(play, delay);
-  };
-
-  const rebuild = (newValues = false) => {
-    stopPlayback();
-    if (newValues || !state.original.length) state.original = makeArray();
-    state.steps = generators[state.algorithm](state.original);
-    state.index = 0;
-    activeMethod.textContent = methodNames[state.algorithm];
-    render();
-  };
-
-  menuButton.addEventListener("click", () => {
-    const expanded = menuButton.getAttribute("aria-expanded") === "true";
-    menuButton.setAttribute("aria-expanded", String(!expanded));
-    navigation.classList.toggle("is-open", !expanded);
-  });
-
-  navigation.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      menuButton.setAttribute("aria-expanded", "false");
-      navigation.classList.remove("is-open");
-    });
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      menuButton.setAttribute("aria-expanded", "false");
-      navigation.classList.remove("is-open");
-    }
-  });
-
-  algorithmSelect.addEventListener("change", () => {
-    state.algorithm = algorithmSelect.value;
-    rebuild();
-  });
-
-  speedInput.addEventListener("input", () => {
-    speedLabel.textContent = speedNames[Number(speedInput.value) - 1];
-  });
-
-  newArrayButton.addEventListener("click", () => rebuild(true));
-  resetButton.addEventListener("click", () => rebuild());
-
-  stepButton.addEventListener("click", () => {
-    stopPlayback();
-    advance();
-  });
-
-  playPauseButton.addEventListener("click", () => {
-    if (state.running) {
-      stopPlayback();
+  // Animation Control
+  function step() {
+    if (currentStep >= steps.length) {
+      stop();
+      updateMeta("Sorting completed!", steps.length);
+      renderBars(array, { sorted: array.map((_, i) => i) });
       return;
     }
-    if (state.index >= state.steps.length - 1) {
-      state.index = 0;
-      render();
-    }
-    state.running = true;
-    playPauseButton.textContent = "Pause";
-    play();
+
+    const state = steps[currentStep];
+    const highlights = {};
+
+    if (state.type === "compare") highlights.active = state.indices;
+    if (state.type === "target") highlights.target = state.indices;
+    if (state.type === "swap") highlights.changed = state.indices;
+
+    renderBars(state.array, highlights);
+    currentStep++;
+    updateMeta(`Step ${currentStep}: ${state.type}`, currentStep);
+  }
+
+  function play() {
+    if (currentStep >= steps.length) resetState();
+    isPlaying = true;
+    playPauseBtn.textContent = "Pause";
+    timer = setInterval(() => {
+      if (currentStep < steps.length) {
+        step();
+      } else {
+        stop();
+      }
+    }, getDelay());
+  }
+
+  function stop() {
+    isPlaying = false;
+    playPauseBtn.textContent = "Start";
+    if (timer) clearInterval(timer);
+  }
+
+  function updateMeta(statusText, stepNum) {
+    statusEl.textContent = statusText;
+    stepCountEl.textContent = `Step ${stepNum} of ${steps.length}`;
+  }
+
+  // Event Listeners
+  playPauseBtn.addEventListener("click", () => (isPlaying ? stop() : play()));
+  stepBtn.addEventListener("click", () => { stop(); step(); });
+  resetBtn.addEventListener("click", resetState);
+  newArrayBtn.addEventListener("click", () => generateArray());
+  
+  algorithmSelect.addEventListener("change", resetState);
+  speedInput.addEventListener("change", () => {
+    if (isPlaying) { stop(); play(); }
   });
 
-  document.querySelectorAll("[data-load-algorithm]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.algorithm = button.dataset.loadAlgorithm;
-      algorithmSelect.value = state.algorithm;
-      rebuild();
-      document.querySelector("#playground").scrollIntoView({ behavior: "smooth" });
+  loadButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const algo = e.target.getAttribute("data-load-algorithm");
+      if (algo) {
+        algorithmSelect.value = algo;
+        resetState();
+        document.getElementById("playground").scrollIntoView({ behavior: "smooth" });
+      }
     });
   });
 
-  rebuild(true);
+  // Initialize
+  generateArray();
 });
